@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
-{    
+{
+    public Playertype playertype;
     public float speed = 1f;
     public float acceleration = 1f;
     public float jumpStrength = 1f;
     public LayerMask layerMask;
-    private enum State { Idle, Running, Jumping}
+
+    public enum Playertype { Player1, Player2 };
+    private enum State { Idle, Running, Jumping};
 
     private State state = State.Idle;
     private Rigidbody rb;
@@ -28,14 +31,29 @@ public class Player : MonoBehaviour
         //    rb.AddForce(Vector2.right * acceleration * 100 * Time.deltaTime, ForceMode.Acceleration);
         //}
 
-        float hor = Input.GetAxis("Horizontal");
+        float hor;
+
+        if (playertype == Playertype.Player1)
+        {
+            hor = Input.GetAxis("Player1");
+        } else
+        {
+            hor = Input.GetAxis("Player2");
+        }
 
         Vector2 move = rb.velocity;
         move.x = hor * speed;
-        if (Input.GetKey(KeyCode.W) && isGrounded)
+
+        if (Input.GetKey(KeyCode.W) && isGrounded && playertype == Playertype.Player1)
         {
             move.y = jumpStrength;
         }
+
+        if (Input.GetKey(KeyCode.UpArrow) && isGrounded && playertype == Playertype.Player2)
+        {
+            move.y = jumpStrength;
+        }
+
         rb.velocity = move;
 
         //if (Input.GetKey(KeyCode.W) && isGrounded)
@@ -55,13 +73,13 @@ public class Player : MonoBehaviour
             isGrounded = false;
         }
 
-        if (rb.velocity.x > speed)
-        {
-            rb.velocity = new Vector3(speed, rb.velocity.y, rb.velocity.z);
-        }
-        else if (rb.velocity.x < -speed)
-        {
-            rb.velocity = new Vector3(-speed, rb.velocity.y, rb.velocity.z);
-        }
+        //if (rb.velocity.x > speed)
+        //{
+        //    rb.velocity = new Vector3(speed, rb.velocity.y, rb.velocity.z);
+        //}
+        //else if (rb.velocity.x < -speed)
+        //{
+        //    rb.velocity = new Vector3(-speed, rb.velocity.y, rb.velocity.z);
+        //}
     }
 }
