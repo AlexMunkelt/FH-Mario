@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7691668673218962721}
   - component: {fileID: 7691668673218962726}
   - component: {fileID: 7691668673218962733}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -125,9 +125,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 592111ebcb8fab94aa749fb5392f1ce2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playertype: 0
   speed: 10
   acceleration: 10
   jumpStrength: 10
   layerMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 64

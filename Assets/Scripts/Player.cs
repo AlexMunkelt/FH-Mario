@@ -15,7 +15,13 @@ public class Player : MonoBehaviour
 
     private State state = State.Idle;
     private Rigidbody rb;
-    private bool isGrounded;
+    private bool isGrounded = false;
+    private bool touchedLeftWall = false;
+    private bool touchedRightWall = false;
+    private bool canMove = true;
+
+    private Vector3 move = Vector3.zero;
+
     void Start()
     {
         rb = this.GetComponent<Rigidbody>();
@@ -23,26 +29,34 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        //if (Input.GetKey(KeyCode.A))
-        //{
-        //    rb.AddForce(Vector2.left * acceleration * 100 * Time.deltaTime, ForceMode.Acceleration);
-        //} else if (Input.GetKey(KeyCode.D))
-        //{
-        //    rb.AddForce(Vector2.right * acceleration * 100 * Time.deltaTime, ForceMode.Acceleration);
-        //}
+        Movement();
+    }
+
+    private void Movement()
+    {
+        #region HorizontalMovement
 
         float hor;
 
         if (playertype == Playertype.Player1)
         {
             hor = Input.GetAxis("Player1");
-        } else
+        }
+        else
         {
             hor = Input.GetAxis("Player2");
         }
 
-        Vector2 move = rb.velocity;
-        move.x = hor * speed;
+        move = rb.velocity;
+
+        if (canMove)
+        {
+            move.x = hor * speed;
+        }
+
+        #endregion
+
+        #region Jumping
 
         if (Input.GetKey(KeyCode.W) && isGrounded && playertype == Playertype.Player1)
         {
@@ -54,32 +68,73 @@ public class Player : MonoBehaviour
             move.y = jumpStrength;
         }
 
-        rb.velocity = move;
+        if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.A) && touchedLeftWall && playertype == Playertype.Player1)
+        {
+            move.y = jumpStrength;
+            move.x = speed;
 
-        //if (Input.GetKey(KeyCode.W) && isGrounded)
-        //{
-        //    rb.AddForce(Vector2.up * jumpStrength * 10 * Time.deltaTime, ForceMode.VelocityChange);
-        //}
+            StartCoroutine(CanMoveAgain(0.5f));
+        }
+
+        if (Input.GetKey(KeyCode.W) && Input.GetKey(KeyCode.D) && touchedRightWall && playertype == Playertype.Player1)
+        {
+            move.y = jumpStrength;
+            move.x = -speed;
+
+            StartCoroutine(CanMoveAgain(0.5f));
+        }
+
+        rb.velocity = Vector3.Lerp(rb.velocity, move, 1f);
+
+        #endregion
+
+        #region GroundedCheck
 
         RaycastHit hit;
 
-        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, 1f, layerMask))
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, 1f, ~layerMask))
         {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * hit.distance, Color.yellow);
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * hit.distance, Color.red);
             isGrounded = true;
-            Debug.Log("Grounded");
-        } else
+        }
+        else
         {
             isGrounded = false;
         }
 
-        //if (rb.velocity.x > speed)
-        //{
-        //    rb.velocity = new Vector3(speed, rb.velocity.y, rb.velocity.z);
-        //}
-        //else if (rb.velocity.x < -speed)
-        //{
-        //    rb.velocity = new Vector3(-speed, rb.velocity.y, rb.velocity.z);
-        //}
+        #endregion
+
+        #region WalljumpingCheck
+
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.left), out hit, 1f, ~layerMask))
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.left) * hit.distance, Color.red);
+            touchedLeftWall = true;
+        }
+        else
+        {
+            touchedLeftWall = false;
+        }
+
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.right), out hit, 1f, ~layerMask))
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * hit.distance, Color.red);
+            touchedRightWall = true;
+        }
+        else
+        {
+            touchedRightWall = false;
+        }
+
+        #endregion
+    }
+
+    private IEnumerator CanMoveAgain(float timeUntilMoveAgain)
+    {
+        canMove = false;
+
+        yield return new WaitForSeconds(timeUntilMoveAgain);
+
+        canMove = true;
     }
 }
